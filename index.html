@@ -303,6 +303,51 @@
     .letter-card{ padding: 40px 22px 46px; }
     .letter-body{ font-size: 20px; }
   }
+
+  /* ---------- SIKE OVERLAY ---------- */
+  .sike-overlay{
+    position: fixed;
+    inset: 0;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(78,30,39,0.55);
+    backdrop-filter: blur(4px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+  .sike-overlay.show{
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .sike-card{
+    background: var(--paper);
+    border-radius: 20px;
+    padding: 40px 46px;
+    text-align: center;
+    box-shadow: 0 30px 60px -20px rgba(0,0,0,0.5);
+    transform: scale(0.7) rotate(-6deg);
+    transition: transform 0.35s cubic-bezier(.34,1.56,.64,1);
+  }
+  .sike-overlay.show .sike-card{
+    transform: scale(1) rotate(-2deg);
+  }
+  .sike-title{
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 700;
+    font-size: clamp(36px, 10vw, 54px);
+    color: var(--wine);
+    margin: 0 0 6px;
+  }
+  .sike-sub{
+    font-family: 'Caveat', cursive;
+    font-size: 22px;
+    color: var(--ink-soft);
+    margin: 0;
+  }
 </style>
 </head>
 <body>
@@ -434,6 +479,13 @@
 
 <audio id="song" src="Be_Mine.mp3" loop preload="auto"></audio>
 
+<div class="sike-overlay" id="sikeOverlay">
+  <div class="sike-card">
+    <p class="sike-title">SIKE.</p>
+    <p class="sike-sub">we're locked in FR FR 😂❤️</p>
+  </div>
+</div>
+
 <script>
   // ambient petals
   const arena = document.getElementById('arena');
@@ -486,16 +538,6 @@
     if(isNear(e.clientX, e.clientY)) dodge();
   });
 
-  // touch: never let a tap land on it
-  noBtn.addEventListener('pointerdown', (e) => {
-    e.preventDefault();
-    dodge();
-  });
-  noBtn.addEventListener('click', (e) => {
-    e.preventDefault();
-    dodge();
-  });
-
   // Yes -> reveal letter + play song
   const song = document.getElementById('song');
   const playPauseBtn = document.getElementById('playPause');
@@ -508,11 +550,39 @@
     playerSub.textContent = playing ? 'now playing' : 'paused';
   }
 
-  document.getElementById('yesBtn').addEventListener('click', () => {
+  function revealLetter(){
     document.getElementById('scene-ask').classList.add('hidden');
     document.getElementById('scene-letter').classList.add('visible');
     song.play().then(() => setPlayingUI(true)).catch(() => setPlayingUI(false));
-  });
+  }
+
+  document.getElementById('yesBtn').addEventListener('click', revealLetter);
+
+  // touch/click on No: mostly dodges, but after enough failed attempts
+  // there's a small chance she actually catches it
+  const sikeOverlay = document.getElementById('sikeOverlay');
+
+  function caughtNo(){
+    noBtn.style.pointerEvents = 'none';
+    sikeOverlay.classList.add('show');
+    setTimeout(() => {
+      sikeOverlay.classList.remove('show');
+      revealLetter();
+    }, 1400);
+  }
+
+  function tryClickNo(e){
+    e.preventDefault();
+    const canBeCaught = dodgeCount >= 4;
+    const caught = canBeCaught && Math.random() < 0.22;
+    if(caught){
+      caughtNo();
+    } else {
+      dodge();
+    }
+  }
+
+  noBtn.addEventListener('pointerdown', tryClickNo);
 
   playPauseBtn.addEventListener('click', () => {
     if(song.paused){
