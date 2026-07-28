@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Be Mine?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,500;1,9..144,600&family=Caveat:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream: #FBF1EA;
+    --cream-2: #F4E3DC;
+    --paper: #FFFAF2;
+    --wine: #6E2A34;
+    --wine-deep: #4E1E27;
+    --rose: #D98CA0;
+    --rose-soft: #F0C4CE;
+    --gold: #C9A24B;
+    --ink: #3A2B2E;
+    --ink-soft: #7A6A6C;
+  }
+
+  *{ box-sizing: border-box; }
+
+  html,body{
+    margin:0; padding:0; height:100%;
+    background: radial-gradient(circle at 20% 15%, var(--cream-2), var(--cream) 55%);
+    font-family: 'Inter', sans-serif;
+    color: var(--ink);
+    overflow-x: hidden;
+  }
+
+  .arena{
+    position: relative;
+    min-height: 100vh;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+
+  /* ambient floating petals */
+  .petal{
+    position: absolute;
+    width: 14px; height: 18px;
+    background: var(--rose-soft);
+    border-radius: 0 100% 0 100%;
+    opacity: 0.45;
+    filter: blur(0.3px);
+    animation: drift linear infinite;
+    pointer-events: none;
+  }
+  @keyframes drift{
+    0%{ transform: translateY(-10vh) translateX(0) rotate(0deg); }
+    100%{ transform: translateY(110vh) translateX(30px) rotate(220deg); }
+  }
+
+  /* ---------- SCENE 1: THE ASK ---------- */
+  #scene-ask{
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    max-width: 480px;
+    text-align: center;
+    transition: opacity 0.6s ease, transform 0.6s ease, filter 0.6s ease;
+  }
+  #scene-ask.hidden{
+    opacity: 0;
+    transform: scale(0.92);
+    filter: blur(6px);
+    pointer-events: none;
+  }
+
+  .envelope{
+    position: relative;
+    background: var(--paper);
+    border-radius: 18px;
+    padding: 56px 32px 40px;
+    box-shadow: 0 30px 60px -20px rgba(78,30,39,0.35), 0 2px 0 rgba(255,255,255,0.6) inset;
+    border: 1px solid rgba(110,42,52,0.08);
+  }
+
+  .seal{
+    position: absolute;
+    top: -26px;
+    left: 50%;
+    transform: translateX(-50%) rotate(-4deg);
+    width: 52px; height: 52px;
+    background: linear-gradient(160deg, var(--wine), var(--wine-deep));
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 6px 14px rgba(78,30,39,0.45);
+  }
+  .seal svg{ width: 24px; height: 24px; }
+
+  .eyebrow{
+    font-family: 'Caveat', cursive;
+    font-size: 22px;
+    color: var(--gold);
+    margin: 6px 0 2px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+
+  h1.headline{
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 600;
+    font-size: clamp(48px, 12vw, 72px);
+    line-height: 0.95;
+    margin: 6px 0 14px;
+    color: var(--wine);
+  }
+
+  .subtext{
+    font-family: 'Caveat', cursive;
+    font-size: 20px;
+    color: var(--ink-soft);
+    max-width: 320px;
+    margin: 0 auto 34px;
+    line-height: 1.35;
+  }
+
+  .btn-row{
+    position: relative;
+    height: 64px;
+    margin-top: 8px;
+  }
+
+  .btn{
+    border: none;
+    border-radius: 999px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 17px;
+    cursor: pointer;
+    padding: 16px 38px;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  #yesBtn{
+    background: linear-gradient(160deg, var(--wine), var(--wine-deep));
+    color: var(--cream);
+    box-shadow: 0 10px 24px -8px rgba(78,30,39,0.55);
+  }
+  #yesBtn:hover{ transform: translateY(-2px) scale(1.03); box-shadow: 0 14px 28px -8px rgba(78,30,39,0.6); }
+  #yesBtn:active{ transform: scale(0.97); }
+
+  #noBtn{
+    position: absolute;
+    top: 0; left: 50%;
+    background: var(--paper);
+    color: var(--ink-soft);
+    border: 1.5px solid rgba(58,43,46,0.18);
+    transition: top 0.28s cubic-bezier(.34,1.56,.64,1), left 0.28s cubic-bezier(.34,1.56,.64,1), transform 0.15s ease;
+  }
+
+  .taunt{
+    position: absolute;
+    bottom: -30px;
+    left: 0; right: 0;
+    font-family: 'Caveat', cursive;
+    font-size: 18px;
+    color: var(--rose);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  .taunt.show{ opacity: 1; }
+
+  /* ---------- SCENE 2: THE LETTER ---------- */
+  #scene-letter{
+    position: fixed;
+    inset: 0;
+    z-index: 5;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 48px 18px 60px;
+    overflow-y: auto;
+    opacity: 0;
+    transform: translateY(24px);
+    pointer-events: none;
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  #scene-letter.visible{
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+
+  .letter-card{
+    position: relative;
+    width: 100%;
+    max-width: 600px;
+    background: var(--paper);
+    border-radius: 22px;
+    padding: 52px 40px 60px;
+    box-shadow: 0 40px 80px -24px rgba(78,30,39,0.4);
+    border: 1px solid rgba(110,42,52,0.08);
+  }
+
+  .letter-seal{
+    position: absolute;
+    top: -24px; left: 50%;
+    transform: translateX(-50%);
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    background: linear-gradient(160deg, var(--wine), var(--wine-deep));
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 6px 14px rgba(78,30,39,0.4);
+  }
+  .letter-seal svg{ width: 22px; height: 22px; }
+
+  .letter-heading{
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 600;
+    font-size: 30px;
+    color: var(--wine);
+    text-align: center;
+    margin: 20px 0 4px;
+  }
+  .letter-sub{
+    text-align: center;
+    font-family: 'Caveat', cursive;
+    font-size: 19px;
+    color: var(--ink-soft);
+    margin-bottom: 30px;
+  }
+
+  .letter-body{
+    font-family: 'Caveat', cursive;
+    font-size: 22px;
+    line-height: 1.5;
+    color: var(--ink);
+  }
+  .letter-body p{ margin: 0 0 16px; }
+  .letter-body p.emph{
+    text-align: center;
+    font-weight: 700;
+    font-size: 26px;
+    color: var(--wine);
+    margin: 22px 0;
+  }
+  .letter-body p.big{
+    text-align: center;
+    font-weight: 700;
+    font-size: 34px;
+    color: var(--wine);
+    margin: 28px 0;
+  }
+  .letter-body .signoff{
+    text-align: right;
+    font-size: 24px;
+    color: var(--gold);
+    margin-top: 30px;
+  }
+
+  /* audio player */
+  .player{
+    margin-top: 36px;
+    background: var(--cream);
+    border-radius: 16px;
+    padding: 16px 18px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    border: 1px solid rgba(110,42,52,0.08);
+  }
+  .player button{
+    width: 44px; height: 44px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    border: none;
+    background: linear-gradient(160deg, var(--wine), var(--wine-deep));
+    color: var(--cream);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+  }
+  .player-text{ font-family: 'Inter', sans-serif; }
+  .player-title{ font-weight: 600; font-size: 14px; color: var(--wine); }
+  .player-sub{ font-size: 12px; color: var(--ink-soft); margin-top: 2px; }
+
+  .eq{ display: flex; align-items: flex-end; gap: 3px; height: 18px; margin-left: auto; }
+  .eq span{
+    width: 3px; background: var(--rose); border-radius: 2px;
+    animation: bounce 1s ease-in-out infinite;
+  }
+  .eq span:nth-child(1){ animation-delay: 0s; }
+  .eq span:nth-child(2){ animation-delay: 0.2s; }
+  .eq span:nth-child(3){ animation-delay: 0.4s; }
+  .eq.paused span{ animation-play-state: paused; height: 4px !important; }
+  @keyframes bounce{
+    0%,100%{ height: 4px; }
+    50%{ height: 18px; }
+  }
+
+  @media (max-width: 480px){
+    .envelope{ padding: 48px 22px 34px; }
+    .letter-card{ padding: 40px 22px 46px; }
+    .letter-body{ font-size: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="arena" id="arena">
+
+  <!-- SCENE 1 -->
+  <div id="scene-ask">
+    <div class="envelope">
+      <div class="seal">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M12 21s-7.5-4.6-10-9.3C.5 8 2.3 4.5 6 4.5c2.2 0 3.7 1.4 6 4.2 2.3-2.8 3.8-4.2 6-4.2 3.7 0 5.5 3.5 4 7.2C19.5 16.4 12 21 12 21z" fill="#FBF1EA"/></svg>
+      </div>
+      <div class="eyebrow">a letter, for you</div>
+      <h1 class="headline">Be Mine?</h1>
+      <p class="subtext">read the whole thing, i know how lazy you are 😭❤️</p>
+
+      <div class="btn-row" id="btnRow">
+        <button class="btn" id="yesBtn">Yes</button>
+        <button class="btn" id="noBtn">No</button>
+        <div class="taunt" id="taunt"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCENE 2 -->
+  <div id="scene-letter">
+    <div class="letter-card">
+      <div class="letter-seal">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M12 21s-7.5-4.6-10-9.3C.5 8 2.3 4.5 6 4.5c2.2 0 3.7 1.4 6 4.2 2.3-2.8 3.8-4.2 6-4.2 3.7 0 5.5 3.5 4 7.2C19.5 16.4 12 21 12 21z" fill="#FBF1EA"/></svg>
+      </div>
+      <div class="letter-heading">To my girl,</div>
+      <div class="letter-sub">welcome backkkk, babe ❤️</div>
+
+      <div class="letter-body">
+        <p>I hope you had an amazing time during your vacation, and I'm really glad you got to have fun and enjoy yourself.</p>
+        <p>But honestly&hellip; it feels sooooo good having you back. 😂❤️</p>
+        <p>I missed having you around, and now that you're finally back, I figured there's something I've been wanting to tell you.</p>
+        <p>So please, for the love of God, read this all the way through because I already know how lazy you are when it comes to reading. 😭😂</p>
+        <p>I promise it'll be worth it.</p>
+        <p>If you told me years ago that I'd eventually be writing you a letter like this, I probably would've laughed.</p>
+        <p>For the longest time, our parents kept trying to get us together. And honestly? I gave it a solid 0% chance. 😂</p>
+        <p>I never really gave us a chance. Maybe I wasn't ready. Maybe I just didn't see what was right in front of me.</p>
+        <p>Then years passed.</p>
+        <p>And somehow, here we are.</p>
+        <p>Now I'm 28, you're 21, and after finally getting the chance to actually talk to you, just you and me, without anyone trying to push us together, something changed.</p>
+        <p>I started noticing how much we actually have in common. How easy it can feel talking to you. How naturally we understand certain things about each other.</p>
+        <p>And somewhere along the way, I felt something I honestly wasn't expecting.</p>
+        <p>A spark.</p>
+        <p>Something different.</p>
+        <p>Something I hadn't really felt before.</p>
+        <p>And the more I got to know you, the more I realized that I wasn't just enjoying talking to you.</p>
+        <p class="emph">I was falling for you.</p>
+        <p>I don't think I'll ever be able to give you one simple reason why, because honestly, it's not just one thing.</p>
+        <p>I love you because you're youuuuuu.</p>
+        <p>It wasn't just your looks, your age, or the excitement of being with someone new. It was all the little things I started discovering about you. Your personality, your smile, the way you laugh, the random things you say, your little habits, and even the weird, quirky things you do that sometimes make absolutely no sense. 😂</p>
+        <p>And I especially love the version of you that not everyone gets to see.</p>
+        <p>The soft girl.<br>The silly girl.<br>The weird girl.<br>The girl who can just be herself.</p>
+        <p>I love getting to know that side of you because it feels like I'm getting to know the real you, not just the version everyone else sees.</p>
+        <p>And the funny thing is, the girl everyone kept trying to get me together with all those years ago&hellip;</p>
+        <p class="emph">ended up being the girl I chose for myself.</p>
+        <p>No one had to convince me this time.</p>
+        <p>No one had to push me toward you.</p>
+        <p>I found my way to you on my own.</p>
+        <p>And I think that makes this mean even more to me.</p>
+        <p>We've already had beautiful moments together, and I know things won't always be perfect. We'll misunderstand each other sometimes. We'll annoy each other. We'll probably argue over stupid shit. 😂</p>
+        <p>But I don't think love is about finding someone perfect.</p>
+        <p>I think it's about finding someone whose imperfections you can see clearly and still look at them and say,</p>
+        <p class="emph">&ldquo;I still want you.&rdquo;</p>
+        <p>And I want you.</p>
+        <p>I don't need you to be perfect. I don't want some perfect version of you that I created in my head.</p>
+        <p>I want you.</p>
+        <p>The good days.<br>The bad days.<br>The pretty days.<br>The messy days.<br>The soft days.<br>The weird days.</p>
+        <p>All of it.</p>
+        <p>And when I picture my future, I don't know exactly what it's going to look like.</p>
+        <p>But I know who I want beside me while I figure it out.</p>
+        <p class="emph">You.</p>
+        <p>I want us to grow together. To make stupid memories. To laugh until our stomachs hurt. To annoy the hell out of each other. To experience new things together. To support each other when life gets hard.</p>
+        <p>I don't want a love that only exists when everything is easy.</p>
+        <p>I want the kind where, when the road gets bumpy, I don't immediately let go of your hand.</p>
+        <p class="emph">I hold on tighter.</p>
+        <p>So tighten up, babe, because I'm not scared of the bumps in the road. 😂</p>
+        <p>I'm all for it.</p>
+        <p>And maybe this is the part where I finally say what I've been wanting to say.</p>
+        <p>After all those years of not giving us a chance&hellip;</p>
+        <p>After all the conversations&hellip;</p>
+        <p>After getting to know you&hellip;</p>
+        <p>After realizing how much you mean to me&hellip;</p>
+        <p class="emph">I want to give us that chance.</p>
+        <p>Not because our parents wanted it.</p>
+        <p>Not because someone else thinks we'd be good together.</p>
+        <p>But because I want you.</p>
+        <p>I want to see where this goes.</p>
+        <p>I want to be the person you can come home to, laugh with, cry with, annoy, and be completely yourself around.</p>
+        <p>I want to keep learning you, even the parts you're still learning to love about yourself.</p>
+        <p>And if you ever wonder why I fell for you, I hope you remember this:</p>
+        <p>It wasn't because of one thing you did.</p>
+        <p>It was every little thing that makes you who you are.</p>
+        <p>It was the things we have in common.</p>
+        <p>It was the things that make us different.</p>
+        <p>It was every conversation that made me want another one.</p>
+        <p>It was every moment that made me realize, &ldquo;Damn&hellip; I really like this girl.&rdquo;</p>
+        <p>And somewhere along the way, &ldquo;I really like her&rdquo; turned into &ldquo;I don't want to imagine doing this with anyone else.&rdquo;</p>
+        <p>So, after all these years&hellip;</p>
+        <p>After everyone else tried to get us together&hellip;</p>
+        <p>I think it's finally time I ask you myself.</p>
+        <p class="big">Will you be mine? ❤️</p>
+        <p>Not because anyone else wants us to be.</p>
+        <p>Not because it was supposed to happen years ago.</p>
+        <p>But because right now, with everything I know about you and everything I feel for you&hellip;</p>
+        <p class="emph">I choose you.</p>
+        <p>So, babe&hellip;</p>
+        <p>What do you say?</p>
+        <p class="big">Will you be my girl? ❤️</p>
+        <p class="signoff">yours, always</p>
+      </div>
+
+      <div class="player">
+        <button id="playPause">▶</button>
+        <div class="player-text">
+          <div class="player-title">Our Song</div>
+          <div class="player-sub" id="playerSub">tap to play</div>
+        </div>
+        <div class="eq paused" id="eq"><span></span><span></span><span></span></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<audio id="song" src="Be_Mine.mp3" loop preload="auto"></audio>
+
+<script>
+  // ambient petals
+  const arena = document.getElementById('arena');
+  for(let i=0;i<10;i++){
+    const p = document.createElement('div');
+    p.className = 'petal';
+    p.style.left = Math.random()*100 + 'vw';
+    p.style.animationDuration = (14 + Math.random()*10) + 's';
+    p.style.animationDelay = (Math.random()*10) + 's';
+    p.style.background = Math.random() > 0.5 ? 'var(--rose-soft)' : 'var(--gold)';
+    arena.appendChild(p);
+  }
+
+  // dodging No button
+  const noBtn = document.getElementById('noBtn');
+  const btnRow = document.getElementById('btnRow');
+  const taunt = document.getElementById('taunt');
+  const taunts = [
+    "nice try 😏", "nope!", "not an option, babe", "keep trying though 😂",
+    "closer... jk", "the answer is yes 🙄❤️", "you can't catch me", "i already know what you'll pick"
+  ];
+  let dodgeCount = 0;
+
+  function dodge(){
+    const rowRect = btnRow.getBoundingClientRect();
+    const btnW = noBtn.offsetWidth;
+    const btnH = noBtn.offsetHeight;
+    const maxX = Math.max(rowRect.width - btnW, 40);
+    const maxY = 40; // vertical wiggle room within row height context
+    const newX = Math.random() * maxX;
+    const newY = (Math.random() - 0.5) * 10;
+    noBtn.style.left = newX + 'px';
+    noBtn.style.top = newY + 'px';
+    noBtn.style.transform = 'translateX(0)';
+    dodgeCount++;
+    taunt.textContent = taunts[Math.min(dodgeCount-1, taunts.length-1)];
+    taunt.classList.add('show');
+  }
+
+  function isNear(clientX, clientY){
+    const r = noBtn.getBoundingClientRect();
+    const cx = r.left + r.width/2;
+    const cy = r.top + r.height/2;
+    const dist = Math.hypot(clientX - cx, clientY - cy);
+    return dist < 90;
+  }
+
+  document.addEventListener('mousemove', (e) => {
+    if(document.getElementById('scene-ask').classList.contains('hidden')) return;
+    if(isNear(e.clientX, e.clientY)) dodge();
+  });
+
+  // touch: never let a tap land on it
+  noBtn.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    dodge();
+  });
+  noBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    dodge();
+  });
+
+  // Yes -> reveal letter + play song
+  const song = document.getElementById('song');
+  const playPauseBtn = document.getElementById('playPause');
+  const eq = document.getElementById('eq');
+  const playerSub = document.getElementById('playerSub');
+
+  function setPlayingUI(playing){
+    playPauseBtn.textContent = playing ? '❚❚' : '▶';
+    eq.classList.toggle('paused', !playing);
+    playerSub.textContent = playing ? 'now playing' : 'paused';
+  }
+
+  document.getElementById('yesBtn').addEventListener('click', () => {
+    document.getElementById('scene-ask').classList.add('hidden');
+    document.getElementById('scene-letter').classList.add('visible');
+    song.play().then(() => setPlayingUI(true)).catch(() => setPlayingUI(false));
+  });
+
+  playPauseBtn.addEventListener('click', () => {
+    if(song.paused){
+      song.play(); setPlayingUI(true);
+    } else {
+      song.pause(); setPlayingUI(false);
+    }
+  });
+</script>
+
+</body>
+</html>
